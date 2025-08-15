@@ -1,17 +1,28 @@
 package com.example.sprintstodo.data
 
-import com.example.sprintstodo.TaskDao
-
 
 class TaskRepository(private val dao: TaskDao) {
 
     val allTasks = dao.getAllTasks()
 
-    suspend fun insert(task: Task) {
+    // Tasks
+    suspend fun insertTask(task: Task) {
         dao.insertTask(task)
     }
 
-    suspend fun delete(task: Task) {
+    suspend fun deleteTask(task: Task) {
         dao.deleteTask(task)
     }
+
+    // SubTasks
+    suspend fun insertSubTask(subTask: SubTask) {
+        dao.insertSubTask(subTask)
+    }
+
+    suspend fun deleteSubTask(subTask: SubTask) {
+        dao.deleteSubTask(subTask)
+    }
+
+    fun getSubTasksForTask(taskId: Int) =
+        dao.getSubTasksForTask(taskId)
 }

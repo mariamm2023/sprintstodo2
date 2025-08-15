@@ -1,13 +1,15 @@
 package com.example.sprintstodo.data
 
-
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.sprintstodo.TaskDao
 
-@Database(entities = [Task::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Task::class, SubTask::class], // أضفنا SubTask هنا
+    version = 2,
+    exportSchema = false
+)
 abstract class TaskDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
@@ -22,11 +24,13 @@ abstract class TaskDatabase : RoomDatabase() {
                     context.applicationContext,
                     TaskDatabase::class.java,
                     "task_database"
-                ).build()
+                )
+                    // عشان لو غيرنا الـ version يعمل recreate للـ DB بدون migration
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
-
