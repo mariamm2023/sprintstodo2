@@ -7,6 +7,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SprintstodoTheme {
-                // إنشاء Repository و ViewModel باستخدام Factory
                 val repository = TaskRepository(TaskDatabase.getDatabase(this).taskDao())
                 val viewModel: TaskViewModel = viewModel(
                     factory = TaskViewModelFactory(repository)
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ToDoScreen(viewModel) // تمرير الـ ViewModel للـ UI
+                    ToDoScreen(viewModel)
                 }
             }
         }
@@ -54,7 +55,6 @@ fun ToDoScreen(viewModel: TaskViewModel) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // إدخال التاسك الرئيسي
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -63,7 +63,7 @@ fun ToDoScreen(viewModel: TaskViewModel) {
                 value = taskText,
                 onValueChange = { taskText = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("اكتب التاسك هنا") }
+                placeholder = { Text("add your project") }
             )
             Spacer(modifier = Modifier.width(8.dp))
             Button(
@@ -74,13 +74,12 @@ fun ToDoScreen(viewModel: TaskViewModel) {
                     }
                 }
             ) {
-                Text("إضافة")
+                Text("submit")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // عرض قائمة التاسكات
         LazyColumn {
             items(taskList) { task ->
                 TaskItem(task, viewModel)
@@ -95,20 +94,34 @@ fun TaskItem(task: Task, viewModel: TaskViewModel) {
     var subTaskTitle by remember { mutableStateOf("") }
     val subTasks by viewModel.getSubTasks(task.taskId).collectAsState(initial = emptyList())
 
-    Column(modifier = Modifier.padding(8.dp)) {
-        Text(text = task.title, style = MaterialTheme.typography.titleMedium)
+    Column(modifier = Modifier
+        .padding(8.dp)
+        .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = task.title, style = MaterialTheme.typography.titleMedium)
 
-        // زرار لإضافة SubTask
+            IconButton(onClick = { viewModel.deleteTask(task) }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Task"
+                )
+            }
+        }
+
         Button(onClick = { showDialog = true }) {
             Text("Add SubTask")
         }
 
-        // قائمة SubTasks
+
         subTasks.forEach { subTask ->
             Text(" - ${subTask.title}")
         }
 
-        // دايلوج إضافة SubTask
         if (showDialog) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
@@ -117,7 +130,9 @@ fun TaskItem(task: Task, viewModel: TaskViewModel) {
                     OutlinedTextField(
                         value = subTaskTitle,
                         onValueChange = { subTaskTitle = it },
-                        label = { Text("SubTask Title") }
+                        label = { Text("SubTask Title") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 confirmButton = {
@@ -134,10 +149,16 @@ fun TaskItem(task: Task, viewModel: TaskViewModel) {
                     }
                 },
                 dismissButton = {
-                    Button(onClick = { showDialog = false }) {
+                    Button(
+                        onClick = {
+                            subTaskTitle = ""
+                            showDialog = false
+                        }
+                    ) {
                         Text("Cancel")
                     }
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
